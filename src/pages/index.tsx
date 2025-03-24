@@ -1,71 +1,109 @@
+import { use, useState } from "react";
 import { trpc } from "../utils/trpc";
-import { GetServerSideProps } from "next";
+import { useRouter } from "next/router";
 
-type Task = {
-    id: string;
-    titulo: string;
-    descricao?: string;
-    dataCriacao: Date;
-};
+export default function Home() {
+  const router = useRouter();
 
-type Props = {
-    initialTasks: Task[];
-};
+  const [titulo, setTitulo] = useState("");
+  const [descricao, setDescricao] = useState("");
 
-export default function Home({ initialTasks }: Props) {
-    const utils = trpc.useContext();
+  const { data: tarefas, refetch } = trpc.listarTarefas.useQuery();
+  
 
-  // Carregar tarefas do backend
-    const { data: tasks = initialTasks, refetch } = trpc.listarTarefas.useQuery(
-    undefined,
-    {
-        initialData: initialTasks.map(task => ({ ...task, dataCriacao: task.dataCriacao.toISOString() })),
-    }
-    );
-
-  // deletar tarefas
-    const deleteTask = trpc.deletarTarefa.useMutation({
+  const criarTarefaMutation = trpc.criarTarefa.useMutation({
     onSuccess: () => {
-        alert("Tarefa deletada com sucesso!");
-      refetch(); // Atualiza a lista após a exclusão
+      alert("Tarefa criada com sucesso!");
+      refetch();
     },
     onError: (error) => {
-        alert(`Erro ao deletar: ${error.message}`);
+      alert(`Erro ao criar tarefa: ${error.message}`);
     },
-    });
+  });
 
-    return (
-    <div>
-        <h1>📋 Lista de Tarefas</h1>
-        {tasks.length === 0 ? (
-        <p>Sem tarefas no momento. 🎉</p>
-        ) : (
-        <ul>
-            {tasks.map((task) => (
-            <li key={task.id}>
-              <strong>{task.titulo}</strong> -{" "}
-              {task.descricao || "Sem descrição"}
-              <button
-                onClick={() => deleteTask.mutate({ id: task.id })}
-                disabled={deleteTask.isLoading}
-              >
-                {deleteTask.isLoading ? "Excluindo..." : "Excluir"}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+  const atualizarTarefaMutation = trpc.atualizarTarefa.useMutation({
+    onSuccess: () => {
+      alert("Tarefa atualizada com sucesso!");
+      refetch();
+    },
+    onError: (error) => {
+      alert(`Erro ao atualizar tarefa: ${error.message}`);
+    },
+  });
+
+  const deletarTarefaMutation = trpc.deletarTarefa.useMutation({
+    onSuccess: () => {
+      alert("Tarefa deletada com sucesso!");
+      refetch();
+    },
+    onError: (error) => {
+      alert(`Erro ao deletar tarefa: ${error.message}`);
+    },
+  });
+
+  
+  const handleCriarTarefa = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (titulo === null) {
+      alert("O Título é obrigatório");
+      return;
+    }
+
+    criarTarefaMutation.mutate({
+      titulo: titulo,
+      descricao: descricao || undefined,
+    });
+    setTitulo("");
+    setDescricao("");
+  };
+
+  const handleAtualizarTarefa = () => {
+    
+    router.push(`/atualizar-tarefas?id`);
+  };
+  
+  const handleDeletarTarefa = (id: string) => {
+    deletarTarefaMutation.mutate({ id });
+  };
+
+  const handleListarTarefas = () => {
+    router.push("/listar-tarefas");
+  };
+
+  return (
+    <>
+      <h1 className="text-2xl font-bold mb-6 text-pink-800">📋 Criar Tarefas </h1>
+      <form onSubmit={handleCriarTarefa}>
+        <label>
+          Título:
+          <input
+            type="text"
+            value={titulo}
+            onChange={(e) => setTitulo(e.target.value)}
+            placeholder="Digite o título da tarefa"
+            required
+          />
+    
+        </label>
+        <br />
+        <label>
+          Descrição (opcional):
+          <input
+            type="text"
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            placeholder="Digite a descrição da tarefa"
+          />
+        </label>
+        <br />
+        <button type="submit" > Criar Tarefa </button>
+        <button onClick={handleListarTarefas}> Listar Tarefa </button>
+        
+        <br />
+      
+      </form>
+
+      <button onClick={handleAtualizarTarefa}>Atualizar Tarefas</button>
+    </>
   );
 }
-
-// Função SSR para pré-carregar as tarefas
-export const getServerSideProps: GetServerSideProps = async () => {
-  const response = await fetch("http://localhost:3000/api/trpc/list");
-  const data = await response.json();
-  return {
-    props: {
-      initialTasks: data?.result?.data || [],
-    },
-  };
-};

@@ -1,11 +1,9 @@
 import { createNextApiHandler } from "@trpc/server/adapters/next";
-import { tarefasRouter } from "../../../server/crud"; // Importa as rotas das tarefas
+import { tarefaRouter } from "../../../server/routers/crud";
+import * as trpcNext from "@trpc/server/adapters/next";
 
-
-
-
-export default createNextApiHandler({
-  router: tarefasRouter, // Define o roteador de tarefas
-    createContext: () => ({}),
+// Cria o handler do tRPC
+export default trpcNext.createNextApiHandler({
+  router: tarefaRouter,
+  createContext: () => ({}),
 });
-
