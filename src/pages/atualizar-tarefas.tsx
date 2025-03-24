@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { trpc } from "../utils/trpc";
 import { useEffect, useState } from "react";
+import * as HomeStyles from "./styles/HomeStyles";
 
 export default function AtualizarTarefas() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function AtualizarTarefas() {
   const deletarTarefaMutation = trpc.deletarTarefa.useMutation({
     onSuccess: () => {
       alert("Tarefa deletada com sucesso!");
-      refetch();
+      router.reload();
     },
     onError: (error) => {
       alert(`Erro ao deletar tarefa: ${error.message}`);
@@ -67,8 +68,9 @@ export default function AtualizarTarefas() {
 
 
   return (
+    <HomeStyles.Container>
     <div>
-      <h1>Atualizar Tarefas</h1>
+      <HomeStyles.Title>Atualizar Tarefas</HomeStyles.Title>
       <ul>
         {tarefas?.length === 0 ? (
           <p>Não há tarefas cadastradas.</p>
@@ -79,47 +81,48 @@ export default function AtualizarTarefas() {
 
             return (
               <div key={tarefa.id}>
-                <form
+                <HomeStyles.FormContainer
                   onSubmit={(e) =>
                     handleAtualizarTarefa(tarefa.id, e, titulo, descricao)
                   }
                 >
-                  <label>
+                  <HomeStyles.Label>
                     Título:
-                    <input
+                    <HomeStyles.Input
                       type="text"
                       value={titulo}
                       onChange={(e) => setTitulo(e.target.value)}
                       placeholder="Digite o título da tarefa"
                       required
                     />
-                  </label>
-                  <label>
+                  </HomeStyles.Label>
+                  <HomeStyles.Label>
                     Descrição:
-                    <input
+                    <HomeStyles.Input
                       type="text"
                       value={descricao}
                       onChange={(e) => setDescricao(e.target.value)}
                       placeholder="Digite a descrição da tarefa"
                     />
-                  </label>
-                  <button type="submit" disabled={!titulo.trim()}>
+                  </HomeStyles.Label>
+                  <HomeStyles.Button type="submit" disabled={!titulo.trim()}>
                     Atualizar
-                  </button>
-                  <button onClick={() => handlerDeletarTarefa(tarefa.id)}>
+                  </HomeStyles.Button>
+                  <HomeStyles.Button onClick={() => handlerDeletarTarefa(tarefa.id)}>
                   Deletar
-                </button>
-                </form>
+                </HomeStyles.Button>
+                </HomeStyles.FormContainer>
               </div>
             );
           })
         )}
       </ul>
 
-      <div>
-        <button onClick={handleVoltar}>Criar Nova Tarefa</button>
-        <button onClick={handleListarTarefas}>Listar tarefas</button>
-      </div>
+      <HomeStyles.ContainerButton>
+        <HomeStyles.Button2 onClick={handleVoltar}>Criar Tarefa</HomeStyles.Button2>
+        <HomeStyles.Button2 onClick={handleListarTarefas}>Listar tarefa</HomeStyles.Button2>
+      </HomeStyles.ContainerButton>
     </div>
+    </HomeStyles.Container>
   );
 }

@@ -1,6 +1,7 @@
 import { GetServerSideProps } from "next";
 import { trpc } from "../utils/trpc";
 import { useRouter } from "next/router";
+import * as HomeStyles from "./styles/HomeStyles";
 
 // Tipo da tarefa
 interface Tarefa {
@@ -20,12 +21,13 @@ export default function ListarTarefas({ tarefas }: ListarTarefasProps) {
   const deletarTarefaMutation = trpc.deletarTarefa.useMutation({
     onSuccess: () => {
       alert("Tarefa deletada com sucesso!");
-      // Normalmente você chamaria um refetch aqui para atualizar os dados
+      router.reload(); // Força um reload para atualizar a lista de tarefas
     },
     onError: (error) => {
       alert(`Erro ao deletar tarefa: ${error.message}`);
     },
   });
+  
 
   const handlerDeletarTarefa = (id: string) => {
     if (!confirm("Tem certeza que deseja deletar essa tarefa?")) {
@@ -42,9 +44,11 @@ export default function ListarTarefas({ tarefas }: ListarTarefasProps) {
     router.push("/atualizar-tarefas");
   };
 
+
   return (
+    <HomeStyles.Container>
     <div>
-      <h1>Lista de Tarefas</h1>
+      <HomeStyles.Title>Lista de Tarefas</HomeStyles.Title>
       <ul>
         {tarefas?.length === 0 ? (
           <p>Não há tarefas cadastradas.</p>
@@ -53,19 +57,20 @@ export default function ListarTarefas({ tarefas }: ListarTarefasProps) {
             <div key={tarefa.id}>
               <h2>Título: {tarefa.titulo}</h2>
               <p>Descrição: {tarefa.descricao || "Sem descrição"}</p>
-              <button onClick={() => handlerDeletarTarefa(tarefa.id)}>
+              <HomeStyles.Button2 onClick={() => handlerDeletarTarefa(tarefa.id)}>
                 Deletar
-              </button>
+              </HomeStyles.Button2>
             </div>
           ))
         )}
       </ul>
 
-      <div>
-        <button onClick={handleVoltar}>Criar Nova Tarefa</button>
-        <button onClick={handleAtualizarTarefa}>Atualizar Tarefa</button>
-      </div>
+      <HomeStyles.ContainerButton>
+        <HomeStyles.Button onClick={handleVoltar}>Criar Nova Tarefa</HomeStyles.Button>
+        <HomeStyles.Button onClick={handleAtualizarTarefa}>Atualizar Tarefa</HomeStyles.Button>
+      </HomeStyles.ContainerButton>
     </div>
+    </HomeStyles.Container>
   );
 }
 
